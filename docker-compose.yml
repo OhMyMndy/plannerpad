@@ -1,0 +1,41 @@
+services:
+
+  frontend:
+    image: nginx:latest
+    cpu_count: 1
+    mem_limit: 32M
+    init: true
+    volumes:
+      - type: bind
+        source: ./frontend
+        target: /usr/share/nginx/html
+        read_only: true
+
+    ports:
+      - 8888:80
+
+  api:
+    image: python:3.10-alpine3.15
+    init: true
+    volumes:
+      - type: bind
+        source: ./api
+        target: /opt/plannerpad
+      - type: volume
+        source: api-pip
+        target: /usr/local/lib/python3.10
+    entrypoint:
+      - /bin/ash
+      - '-c'
+      - |
+          pip install Flask
+          cd /opt/plannerpad/
+          export FLASK_APP=api
+          exec python3 -m flask run --host=0.0.0.0
+
+
+    ports:
+      - 8889:5000
+
+volumes:
+  api-pip:
